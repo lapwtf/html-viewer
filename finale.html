@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lap Bypass</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: #1f1f1f;
+            border-radius: 10px;
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #00bcd4;
+            font-size: 2.2em;
+            letter-spacing: 1px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            background: #2b2b2b;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 6px;
+            resize: vertical;
+            font-family: monospace;
+            font-size: 1em;
+            transition: box-shadow 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            box-shadow: 0 0 10px #00bcd4;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: space-between;
+        }
+
+        button {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #00bcd4;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #0097a7;
+            transform: scale(1.05);
+        }
+
+        .data-url-display {
+            margin-top: 20px;
+            background: #2b2b2b;
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            white-space: nowrap;
+            border-left: 4px solid #00bcd4;
+            font-family: monospace;
+            font-size: 0.95em;
+        }
+
+        .preview {
+            margin-top: 25px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 250px;
+            border: 1px solid #333;
+            border-radius: 6px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00bcd4;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toggle {
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lap Bypass</h1>
+        <p>Insert your HTML code:</p>
+        <textarea id="htmlCode" oninput="handleInput()"></textarea>
+
+        <div class="toggle">
+            <label><input type="checkbox" id="autoEncode" checked> Auto-encode & update</label>
+        </div>
+
+        <div class="controls">
+            <button onclick="generateDataUrl()">Generate Data URL</button>
+            <button onclick="copyToClipboard()">Copy to Clipboard</button>
+            <button onclick="previewInIframe()">Preview HTML</button>
+        </div>
+
+        <div class="data-url-display" id="dataUrl"></div>
+
+        <div class="preview">
+            <h3>Preview:</h3>
+            <iframe id="previewFrame"></iframe>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Copied to clipboard!</div>
+
+    <script>
+        let autoEncode = true;
+
+        function handleInput() {
+            autoEncode = document.getElementById('autoEncode').checked;
+            if (autoEncode) {
+                generateDataUrl();
+            }
+        }
+
+        function generateDataUrl() {
+            const htmlCode = document.getElementById('htmlCode').value;
+            const encodedHtml = encodeURIComponent(htmlCode);
+            const dataUrl = 'data:text/html;charset=utf-8,' + encodedHtml;
+            document.getElementById('dataUrl').textContent = dataUrl;
+        }
+
+        function copyToClipboard() {
+            const dataUrl = document.getElementById('dataUrl').textContent;
+            if (!dataUrl) return;
+
+            const tempInput = document.createElement('textarea');
+            tempInput.value = dataUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            showToast("Copied to clipboard!");
+        }
+
+        function previewInIframe() {
+            const htmlCode = document.getElementById('htmlCode').value;
+            const frame = document.getElementById('previewFrame');
+            const blob = new Blob([htmlCode], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            frame.src = blobUrl;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        window.onload = generateDataUrl;
+    </script>
+</body>
+</html>
